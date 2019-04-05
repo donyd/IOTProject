@@ -4,7 +4,11 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -15,23 +19,26 @@ import com.google.firebase.database.ValueEventListener;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Database";
     TextView tvTempDisplay, tvHumidityDisplay, tvRangeDisplay;
+    SeekBar sbServoController;
+    ToggleButton tgOverride;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Firebase
+        // Firebase references
         FirebaseDatabase FirebaseDB = FirebaseDatabase.getInstance();
-//        DatabaseReference TempReading = FirebaseDB.getReference("temperature");
-//        DatabaseReference HumidityReading = FirebaseDB.getReference("humidity");
-//        DatabaseReference RangeReading = FirebaseDB.getReference("range");
+        final DatabaseReference ManualOverride = FirebaseDB.getReference("ManualOverride");
+        final DatabaseReference ServoAngle = FirebaseDB.getReference("ServoAngle");
         DatabaseReference SensorReads = FirebaseDB.getReference("sensor_data");
 
         // UI references
         tvTempDisplay = (TextView) findViewById(R.id.tvTempDisplay);
         tvHumidityDisplay = (TextView) findViewById(R.id.tvHumidityDisplay);
         tvRangeDisplay = (TextView) findViewById(R.id.tvRangeDisplay);
+        sbServoController = (SeekBar) findViewById(R.id.seekBarServoController);
+        tgOverride = (ToggleButton) findViewById(R.id.tbManualOverride);
 
 
         // Read values from firebase
@@ -59,6 +66,43 @@ public class MainActivity extends AppCompatActivity {
                 //Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
+
+        // Manual control activation
+        tgOverride.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
+                if(checked){
+                    ManualOverride.setValue("ON");
+                    sbServoController.setVisibility(View.VISIBLE);
+                } else {
+                    ManualOverride.setValue("OFF");
+                    sbServoController.setVisibility(View.GONE);
+                }
+
+            }
+        });
+
+
+        // Manual override logic
+        sbServoController.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            int angle = 0;
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int angle, boolean b) {
+                ServoAngle.setValue(angle);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
 
     }
 }
