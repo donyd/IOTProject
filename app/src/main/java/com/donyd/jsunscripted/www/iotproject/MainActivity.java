@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
                 if(checked){
+
                     ManualOverride.setValue("ON");
                     sbServoController.setVisibility(View.VISIBLE);
                 } else {
